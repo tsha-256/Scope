@@ -99,7 +99,9 @@ def GetAtt():
 def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     TSL.write('TRIG:INP:STAN 0')
     Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle)
-    data = ReadData()
+    data = ReadData() # Function modifications start here
+    ct = time.ctime(time.time()).split()
+    fn = "data_" + WLstart + "_" + WLend + "_" + ct[1] + "_" + ct[2] + "_" + ct[3][0:5] + ".txt"
     with open("data.txt", "w") as file: # TODO CHANGE FILE NAME
         for i in data:
             file.write(i + "\n")
