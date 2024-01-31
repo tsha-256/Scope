@@ -6,9 +6,10 @@ Created on Tue Aug 28 18:11:06 2018
 """
 import pyvisa as visa
 import time
+import TeledyneLeCroyPy
 global TSL
-global Scope
 rm=visa.ResourceManager()
+o = TeledyneLeCroyPy.LeCroyWaveRunner('TCPIP0::blah.bla.blah.bla::inst0::INSTR') #TODO RECONFIGURE FOR THE IP ADDRESS OF THE SCOPE
 listing=rm.list_resources()
 tools=[i for i in listing if 'GPIB' in i]
 for i in tools:
@@ -28,10 +29,7 @@ Use_Cond={
         'SYST:COMM:GPIB:DEL ':'','COHC ':'','AM:STAT ':''
         }
 
-Scope_Cond= [
-        'STAWL****.**', 'STPWL****.**', 'RESLN*.**', 'REFL***.*', 'LSCL**.*', 'AVG****', 'SMPL****',
-          'WRTA', 'DSPA', 'FIXB', 'BLKB', 'FIXC', 'BLKC'  # TODO HAS TO BE CONFIGURED, SMPL prob 0
-]
+
 
 
 def Ini():
@@ -44,8 +42,6 @@ def Ini():
         TSL.write('GC 1')
     else:
         TSL.write('SYST:COMM:COD 0')
-    for i in Scope_Cond:
-        Scope.write(i)
 
 def SetWL(WL):
     TSL.write('WAV ', str(WL))
@@ -97,18 +93,21 @@ def GetAtt():
     return TSL.query('POW:ATT?')
 
 def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
+    o.wait_for_single_trigger() #TODO First modification
     TSL.write('TRIG:INP:STAN 0')
     Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle)
-    data = ReadData() # Function modifications start here
-    ct = time.ctime(time.time()).split()
-    fn = "data_" + WLstart + "_" + WLend + "_" + ct[1] + "_" + ct[2] + "_" + ct[3][0:5] + ".txt"
-    with open("data.txt", "w") as file: # TODO CHANGE FILE NAME
-        for i in data:
-            file.write(i + "\n")
+    rawData = o.get_waveform(n_channel=1) #TODO RECONFIGURE DEPENDING ON CHANNEL, second modification
+    data = rawData['waveforms'][0]
+    time = data['Time (s)']
+    voltage = data[f'Amplitude (V)']
+    with open("data.txt", "w") as file:
+        for i,j in zip(time, voltage):
+            file.write(f"{i}, {j}\n") #TODO End of modifications
+    
 
 def Trig_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     TSL.write('TRIG:INP:STAN 1')
-    Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle)    
+    Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle)
 
 def Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     TSL.write('WAV:SWE:MOD '+str(Swp_mod))
@@ -122,7 +121,6 @@ def Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
         TSL.write('WAV:SWE:SPE '+str(Arg1))
         TSL.write('TRIG:OUTP:STEP '+str(Arg2))
         TSL.write('WAV:SWE:STAT 1')
-        Scope.write('AUTO') # TODO Might be RPT? not sure
         check=TSL.query('WAV:SWE?')
         while True:
             if check!='3':
@@ -137,10 +135,7 @@ def Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
         TSL.write('WAV:SWE:DWEL '+str(Arg2))
         TSL.write('WAV:SWE:STAT 1')
         if Swp_mod == 0:
-            Scope.write('SGL') # TODO Modified code to start scan
-        elif Swp_mod == 2: #
-            Scope.write('RPT') #
-        check=TSL.query('WAV:SWE?') #
+          check=TSL.query('WAV:SWE?')
         while True:
             if check!='3':
                 check=TSL.query('WAV:SWE?')
@@ -158,13 +153,3 @@ def TrigSrc(Trigg):
 
 def TrigMode(Mode):
     TSL.write('TRIG:OUTP '+str(Mode))
-
-def ReadData():
-    Scope.write('SD0')
-    Scope.write('BD0')
-    data = Scope.query('LDATA') # TODO Might be WDATA
-    if data[0] == " ":
-        data = data[1:]
-
-    data = data.split(',')
-    return data
