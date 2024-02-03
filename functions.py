@@ -9,18 +9,19 @@ import time
 import TeledyneLeCroyPy
 global TSL
 rm=visa.ResourceManager()
-o = TeledyneLeCroyPy.LeCroyWaveRunner('TCPIP0::blah.bla.blah.bla::inst0::INSTR') #TODO RECONFIGURE FOR THE IP ADDRESS OF THE SCOPE
+o = TeledyneLeCroyPy.LeCroyWaveRunner('USB0::0x05ff::0x1023::4609N02990::INSTR')
+o.set_trig_source("Ext")
+o.set_trig_slope("Either")
+#o.sampling_mode_sequence("on", numTrials) #TODO Enable to change sample num
 listing=rm.list_resources()
 tools=[i for i in listing if 'GPIB' in i]
 for i in tools:
     buffer=rm.open_resource(i, read_termination='\r\n')
     if 'TSL' in buffer.query('*IDN?'):
         TSL= buffer
-    if 'ANDO' in buffer.query('*IDN?'):
-        Scope= buffer
 Ini_Cond={
         'POW:STAT ':'1','POW:SHUT ':'0','POW:ATT:AUT ':'1','POW:UNIT ':'0','WAV:UNIT ':'0',
-        'TRIG:INP:EXT ':'0','TRIG:OUTP ':'3','WAV:SWE:MOD ':'1',
+        'TRIG:INP:EXT ':'0','TRIG:OUTP ':'2','WAV:SWE:MOD ':'1',
         'SYST:COMM:GPIB:DEL ':'2','COHC ':'0','AM:STAT ':'0'
         }
 Use_Cond={
@@ -35,7 +36,6 @@ Use_Cond={
 def Ini():
     TSL.write('*CLS')
     TSL.write('*RST')
-    Scope.write('*RST') # TODO Not sure if necessary; will reset all settings
     for i,j in zip(Ini_Cond.keys(),Ini_Cond.values()):
         TSL.write(i+j)
     if '550' in TSL.query('*IDN?') or '710' in TSL.query('*IDN?'):
@@ -93,9 +93,9 @@ def GetAtt():
     return TSL.query('POW:ATT?')
 
 def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
-    o.wait_for_single_trigger() #TODO First modification
     TSL.write('TRIG:INP:STAN 0')
     Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle)
+    o.set_trig_mode("Stop")
     rawData = o.get_waveform(n_channel=1) #TODO RECONFIGURE DEPENDING ON CHANNEL, second modification
     data = rawData['waveforms'][0]
     time = data['Time (s)']
@@ -120,6 +120,7 @@ def Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     if Swp_mod==1 or Swp_mod==3:                                                #if Continuous scan modes (one way or two ways) areselected, Arg1 and Arg2 = Scan speed, trigger output step
         TSL.write('WAV:SWE:SPE '+str(Arg1))
         TSL.write('TRIG:OUTP:STEP '+str(Arg2))
+        o.set_trig_mode("Single") #TODO Normal or Single??
         TSL.write('WAV:SWE:STAT 1')
         check=TSL.query('WAV:SWE?')
         while True:
@@ -133,6 +134,7 @@ def Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     elif Swp_mod==0 or Swp_mod==2:
         TSL.write('WAV:SWE:STEP '+str(Arg1))
         TSL.write('WAV:SWE:DWEL '+str(Arg2))
+        o.set_trig_mode("Single") #TODO Normal or Single??
         TSL.write('WAV:SWE:STAT 1')
         if Swp_mod == 0:
           check=TSL.query('WAV:SWE?')
