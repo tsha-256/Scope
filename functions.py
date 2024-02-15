@@ -93,10 +93,15 @@ def GetAtt():
     return TSL.query('POW:ATT?')
 
 def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
+    stopTime = (WLend-WLstart)/Arg1
+    TSL.write('POW:STAT 1')
     TSL.write('TRIG:INP:STAN 0')
     Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle)
+    print("Scan function called") #TODO Remove after testing
+    time.sleep(stopTime) #TODO might need to be put into Scan
     o.set_trig_mode("Stop")
     rawData = o.get_waveform(n_channel=1) #TODO RECONFIGURE DEPENDING ON CHANNEL, second modification
+    TSL.write('POW:STAT 0')
     data = rawData['waveforms'][0]
     time = data['Time (s)']
     voltage = data[f'Amplitude (V)']
@@ -120,7 +125,7 @@ def Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     if Swp_mod==1 or Swp_mod==3:                                                #if Continuous scan modes (one way or two ways) areselected, Arg1 and Arg2 = Scan speed, trigger output step
         TSL.write('WAV:SWE:SPE '+str(Arg1))
         TSL.write('TRIG:OUTP:STEP '+str(Arg2))
-        o.set_trig_mode("Single") #TODO Normal or Single??
+        o.set_trig_mode("Normal") #TODO Normal or Single??
         TSL.write('WAV:SWE:STAT 1')
         check=TSL.query('WAV:SWE?')
         while True:
@@ -134,7 +139,7 @@ def Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     elif Swp_mod==0 or Swp_mod==2:
         TSL.write('WAV:SWE:STEP '+str(Arg1))
         TSL.write('WAV:SWE:DWEL '+str(Arg2))
-        o.set_trig_mode("Single") #TODO Normal or Single??
+        o.set_trig_mode("Normal") #TODO Normal or Single??
         TSL.write('WAV:SWE:STAT 1')
         if Swp_mod == 0:
           check=TSL.query('WAV:SWE?')
