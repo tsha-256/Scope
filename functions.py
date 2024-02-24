@@ -95,14 +95,17 @@ def GetAtt():
 def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     stopTime = (int(WLend)-int(WLstart))/int(Arg1)
     print(stopTime)
-    
     TSL.write('POW:STAT 1')
     TSL.write('TRIG:INP:STAN 0')
     Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle)
     print("Scan function called") #TODO Remove after testing
+    print(TSL.query('WAV:SWE:STAT?'))
     time.sleep(stopTime) #TODO might need to be put into Scan
+    print("slept")
+    print(TSL.query('WAV:SWE:STAT?'))
     o.set_trig_mode("STOP")
     rawData = o.get_waveform(n_channel=1) #TODO RECONFIGURE DEPENDING ON CHANNEL, second modification
+    print("data acquired")
     TSL.write('POW:STAT 0')
     data = rawData['waveforms'][0]
     te = data['Time (s)']
