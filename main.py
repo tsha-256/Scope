@@ -67,7 +67,11 @@ def SetAtt():
     #GetAtt()
           
 def GetAtt():
-    functions.setTrigSource(ui.Att_disp.text())
+    txt = ui.Att_disp.text()
+    if(txt == ''):
+        pass
+    else:
+        functions.setTrigSource(ui.Att_disp.text())
 
 def Get_Data():
     WLstart=ui.lambdaStart_input.text()
