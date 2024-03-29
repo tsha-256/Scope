@@ -153,7 +153,7 @@ def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle,File,channel):
     time.sleep(stopTime) #TODO might need to be put into Scan
     TSL.write('POW:STAT 0')
     scope.set_trig_mode("STOP")
-    storeData(channel, File)
+    storeData(int(channel), File)
 
 def Trig_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     TSL.write('TRIG:INP:STAN 1')
