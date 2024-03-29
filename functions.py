@@ -9,9 +9,9 @@ import time
 import TeledyneLeCroyPy
 global TSL
 rm=visa.ResourceManager()
-o = TeledyneLeCroyPy.LeCroyWaveRunner('USB0::0x05ff::0x1023::4609N02990::INSTR')
-o.set_trig_source("Ext")
-o.set_trig_slope("Ext", "Either")
+#o = TeledyneLeCroyPy.LeCroyWaveRunner('USB0::0x05ff::0x1023::4609N02990::INSTR')
+#o.set_trig_source("Ext")
+#o.set_trig_slope("Ext", "Either")
 #o.sampling_mode_sequence("on", numTrials) #TODO Enable to change sample num
 listing=rm.list_resources()
 tools=[i for i in listing if 'GPIB' in i]
@@ -94,7 +94,17 @@ def GetAtt():
 
 def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     stopTime = (int(WLend)-int(WLstart))/int(Arg1)
-    print(stopTime)
+    time_to_tdiv = {0.00000001:'1NS',0.00000002:'2NS',0.00000005:'5NS',0.0000001:'10NS',0.0000002'20NS',0.0000005:'50NS',0.000001:'100NS',0.000002:'200NS',0.000005:'500NS',0.00001:'1US',0.00002:'2US',0.00005:'5US',0.0001:'10US',0.0002:'20US',0.0005:'50US',0.001:'100US',0.002:'200US',0.005:'500US',0.01:'1MS',0.02:'2MS',0.05:'5MS',0.1:'10MS',0.2:'20MS',0.5:'50MS',1:'100MS',2:'200MS',5:'500MS',10:'1S',20:'2S',50:'5S',100:'10S',200:'20S',500:'50S',1000:'100S'}
+    tdiv = '100S'
+    oTime = 1000
+    for i in time_to_tdiv:
+        if stopTime - i >= 0:
+	    tdiv = time_to_tdiv[i]
+	    oTime = i
+	    break
+    o.set_tdiv(tdiv)
+    o.set_trig_delay(oTime/2)
+
     TSL.write('POW:STAT 1')
     TSL.write('TRIG:INP:STAN 0')
     Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle)
