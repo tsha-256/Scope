@@ -135,12 +135,16 @@ def SetAtt(Att):
 def GetAtt():
     return TSL.query('POW:ATT?')
 
-def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
+def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle,File,channel):
     stopTime = (int(WLend)-int(WLstart))/int(Arg1)
     tdiv, oTime = calcTime(stopTime)
     scope.set_tdiv(tdiv)
-    scope.set_trig_delay(-oTime/2)
-    
+    scope.set_trig_delay(oTime/2)
+    try:
+        open(File, 'a')
+    except:
+        print("Path error")
+        return
     TSL.write('POW:STAT 1')
     TSL.write('TRIG:INP:STAN 0')
     scope.set_trig_mode("NORM") #TODO Normal or Single?
@@ -148,7 +152,8 @@ def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     print("Scan function called") #TODO Remove after testing
     time.sleep(stopTime) #TODO might need to be put into Scan
     TSL.write('POW:STAT 0')
-    scope.set_trig_mode("STOP")    
+    scope.set_trig_mode("STOP")
+    storeData(channel, File)
 
 def Trig_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     TSL.write('TRIG:INP:STAN 1')
