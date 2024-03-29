@@ -30,13 +30,13 @@ def ShutOp():
     TSL.write('POW:SHUT 0')
     time.sleep(0.1)
     GetPwr()
-    GetAtt()
+    #GetAtt()
     
 def ShutClo():
     TSL.write('POW:SHUT 1')
     time.sleep(0.1)
     GetPwr()
-    GetAtt()
+    #GetAtt()
     
 def SetLambda():
     WriteLambda=round(float(ui.lambda_input.text()),4)
@@ -44,7 +44,7 @@ def SetLambda():
     time.sleep(0.1)
     GetLambda()
     GetPwr()
-    GetAtt()
+    #GetAtt()
 
 def GetLambda():
     ui.lambda_disp.setText(functions.GetWL())
@@ -54,7 +54,7 @@ def SetPwr():
     functions.SetPwr(WritePwr)
     time.sleep(0.1)
     GetPwr()
-    GetAtt()
+    #GetAtt()
     
 def GetPwr():
     ui.Pwr_disp.setText(functions.GetPwr())
@@ -64,10 +64,10 @@ def SetAtt():
     functions.SetAtt(WriteAtt)
     time.sleep(0.1)
     GetPwr()
-    GetAtt()
+    #GetAtt()
           
 def GetAtt():
-    ui.Att_disp.setText(functions.GetAtt())
+    functions.setTrigSource(ui.Att_disp.text())
 
 def Get_Data():
     WLstart=ui.lambdaStart_input.text()
@@ -228,7 +228,7 @@ ui.Pwr_go.clicked.connect(SetPwr)                                               
 ui.Pwr_get.clicked.connect(GetPwr)                                              #Read Pwr
 ui.Att_input.editingFinished.connect(SetAtt)                                    #Set Attenuation
 ui.Att_go.clicked.connect(SetAtt)                                               #Set Attenuation
-#ui.Att_get.clicked.connect(GetAtt)                                              #Read Attenuation
+ui.Att_get.clicked.connect(GetAtt)                                              #Read Attenuation
 ui.Start.clicked.connect(Auto_Start)                                            #Start scanning
 ui.SoftTrig.clicked.connect(Trig_Start)                                         #Start scanning with soft trigger
 ui.Swp_mod_input.currentIndexChanged.connect(Field_select)                      #Change selectable fieds depending on sweep mode
