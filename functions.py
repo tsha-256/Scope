@@ -139,7 +139,7 @@ def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     stopTime = (int(WLend)-int(WLstart))/int(Arg1)
     tdiv, oTime = calcTime(stopTime)
     scope.set_tdiv(tdiv)
-    scope.set_trig_delay(oTime/2)
+    scope.set_trig_delay(-oTime/2)
     
     TSL.write('POW:STAT 1')
     TSL.write('TRIG:INP:STAN 0')
