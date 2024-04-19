@@ -18,8 +18,8 @@ for i in tools:
     if 'TSL' in buffer.query('*IDN?'):
         TSL= buffer
 Ini_Cond={
-        'POW:STAT ':'0','POW:SHUT ':'0','POW:ATT:AUT ':'1','POW:UNIT ':'0','WAV:UNIT ':'0',
-        'TRIG:INP:EXT ':'0','TRIG:OUTP ':'2','WAV:SWE:MOD ':'1',
+	'POW:STAT ':'1','POW:SHUT ':'0','POW:ATT:AUT ':'1','POW:UNIT ':'0','WAV:UNIT ':'0',
+        'TRIG:INP:EXT ':'0','TRIG:OUTP ':'3','WAV:SWE:MOD ':'1',
         'SYST:COMM:GPIB:DEL ':'2','COHC ':'0','AM:STAT ':'0'
         }
 Use_Cond={
@@ -138,8 +138,8 @@ def GetAtt():
 def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle,File,channel):
     stopTime = (int(WLend)-int(WLstart))/int(Arg1)
     tdiv, oTime = calcTime(stopTime)
-    scope.set_tdiv(tdiv)
-    scope.set_trig_delay(oTime/2)
+    scope.set_tdiv('1S') #tdiv)
+    scope.set_trig_delay(0) #-oTime/2)
     try:
         open(File, 'a')
     except:
@@ -150,10 +150,11 @@ def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle,File,channel):
     scope.set_trig_mode("NORM") #TODO Normal or Single?
     Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle)
     print("Scan function called") #TODO Remove after testing
-    time.sleep(stopTime) #TODO might need to be put into Scan
+    time.sleep(10) #stopTime) #TODO might need to be put into Scan
     TSL.write('POW:STAT 0')
     scope.set_trig_mode("STOP")
-    storeData(int(channel), File)
+    storeData(int(channel[-1]), File)
+    print("data stored")
 
 def Trig_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle):
     TSL.write('TRIG:INP:STAN 1')
