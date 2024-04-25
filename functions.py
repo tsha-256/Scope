@@ -147,12 +147,12 @@ def Auto_Start(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle,File,channel):
         return
     TSL.write('POW:STAT 1')
     TSL.write('TRIG:INP:STAN 0')
-    scope.set_trig_mode("NORM") #TODO Normal or Single?
+    scope.set_trig_mode("AUTO") #TODO Normal or Single?
     Scan(Swp_mod,WLstart,WLend,Arg1,Arg2,Cycle)
     print("Scan function called") #TODO Remove after testing
     time.sleep(10) #stopTime) #TODO might need to be put into Scan
     TSL.write('POW:STAT 0')
-    scope.set_trig_mode("STOP")
+    #scope.set_trig_mode("STOP")
     storeData(int(channel[-1]), File)
     print("data stored")
 
